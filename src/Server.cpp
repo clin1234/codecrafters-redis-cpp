@@ -68,9 +68,9 @@ int main(int argc, char **argv) {
   }
 
   std::cout << "Waiting for a client to connect...\n";
-  std::cout << "Version: " << __VERSION__ << '\n';
-  //std::jthread r1(recv_loop, server_fd);
-  //std::jthread r2(recv_loop, server_fd);
+  //std::cout << "Version: " << __VERSION__ << '\n';
+  std::jthread r1(recv_loop, server_fd);
+  std::jthread r2(recv_loop, server_fd);
 
   // int fd = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *)
   // &client_addr_len); std::cout << "Client connected\n";
