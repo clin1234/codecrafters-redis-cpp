@@ -39,7 +39,7 @@ void add_thread(std::jthread&& thread) {
 
 void handle_connection(int client_fd) {
   char recv_buffer[1024];
-  std::string_view pong = "+PONG\r\n";
+  std::string_view pong = "+PONG\r\n\0";
   while (recv(client_fd, recv_buffer, sizeof(recv_buffer), 0)) {
     send(client_fd, pong.data(), pong.length(), 0);
   }
