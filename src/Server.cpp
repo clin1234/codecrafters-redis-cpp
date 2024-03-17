@@ -10,6 +10,9 @@
 #include <thread>
 #include <pthread.h>
 #include <unistd.h>
+#include <vector>
+#include <mutex>
+#include <atomic>
 
 void recv_loop(int client_fd) {
   std::cout << "Client connected\n";
