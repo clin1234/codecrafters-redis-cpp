@@ -11,9 +11,6 @@
 #include <unistd.h>
 
 void recv_loop(int client_fd) {
-  struct sockaddr_in client_addr;
-  int client_addr_len = sizeof(client_addr);
-
   std::cout << "Client connected\n";
   char buffer[1024];      // Buffer to store received data
   ssize_t bytes_received; // Variable to store the number of bytes received
@@ -63,6 +60,9 @@ int main(int argc, char **argv) {
     std::cerr << "listen failed\n";
     return 1;
   }
+
+  struct sockaddr_in client_addr;
+  int client_addr_len = sizeof(client_addr);
 
   std::cout << "Waiting for a client to connect...\n";
   int client_fd = accept(server_fd, (struct sockaddr *)&client_addr,
