@@ -8,7 +8,6 @@
 #include <sys/types.h>
 #include <thread>
 #include <unistd.h>
-#include <print>
 
 void recv_loop(int server_fd) {
   struct sockaddr_in client_addr;
@@ -68,7 +67,7 @@ int main(int argc, char **argv) {
   }
 
   std::cout << "Waiting for a client to connect...\n";
-  std::print("Version: {}\n", __VERSION__);
+  std::cout << "Version: " << __VERSION__ << '\n';
   //std::jthread r1(recv_loop, server_fd);
   //std::jthread r2(recv_loop, server_fd);
 
