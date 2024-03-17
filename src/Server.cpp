@@ -25,7 +25,7 @@ void recv_loop(int server_fd) {
     send(fd, "+PONG\r\n", 7,
          0); // Respond with +PONG\r\n for each received command
   }
-  close(fd);
+  //close(fd);
 }
 
 int main(int argc, char **argv) {
