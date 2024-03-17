@@ -9,7 +9,7 @@
 #include <netdb.h>
 #include <thread>
 
-consteval unsigned BUFFER_SIZE = 1024;
+constexpr unsigned BUFFER_SIZE = 1024;
 
 void handleClient(int client_fd)
 {
