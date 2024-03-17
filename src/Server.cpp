@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <thread>
+#include <pthread.h>
 #include <unistd.h>
 
 void recv_loop(int server_fd) {
