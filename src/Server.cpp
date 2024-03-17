@@ -20,7 +20,7 @@ void recv_loop(int client_fd) {
 
   while ((bytes_received = recv(client_fd, buffer, sizeof(buffer), 0)) >
          0) { // Receive data in a loop
-    send(fd, "+PONG\r\n", 7,
+    send(client_fd, "+PONG\r\n", 7,
          0); // Respond with +PONG\r\n for each received command
   }
 }
