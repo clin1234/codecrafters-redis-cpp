@@ -16,7 +16,7 @@ void handleClient(int client_fd)
   char command[BUFFER_SIZE];
   char pong[] = "+PONG\r\n";
   std::cout << "Client is: " << client_fd << '\n';
-  while(recv(client_fd, command, sizeof(command), 0))
+  while(recv(client_fd, command, sizeof(command), 0) > 0)
   {
     send(client_fd, pong, strlen(pong), 0);
   }
