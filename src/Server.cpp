@@ -9,6 +9,22 @@
 #include <netdb.h>
 #include <thread>
 
+void recv_loop() {
+ while (true) {
+   struct sockaddr_in client_addr;
+   int client_addr_len = sizeof(client_addr);
+   
+   int fd = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
+   std::cout << "Client connected\n";
+char buffer[1024]; // Buffer to store received data
+   ssize_t bytes_received; // Variable to store the number of bytes received
+   
+     while ((bytes_received = recv(fd, buffer, sizeof(buffer), 0)) > 0) { // Receive data in a loop
+       send(fd, "+PONG\r\n", 7, 0); // Respond with +PONG\r\n for each received command
+}
+ }
+}
+
 int main(int argc, char **argv) {
    // You can use print statements as follows for debugging, they'll be visible when running tests.
    // std::cout << "Logs from your program will appear here!\n";
@@ -45,23 +61,11 @@ int main(int argc, char **argv) {
      return 1;
    }
   
- while (true) {
-   struct sockaddr_in client_addr;
-   int client_addr_len = sizeof(client_addr);
-   
-   int fd = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
-   std::cout << "Client connected\n";
-char buffer[1024]; // Buffer to store received data
-   ssize_t bytes_received; // Variable to store the number of bytes received
-   
-   std::jthread client_thread([&fd]() {
-     while ((bytes_received = recv(fd, buffer, sizeof(buffer), 0)) > 0) { // Receive data in a loop
-       send(fd, "+PONG\r\n", 7, 0); // Respond with +PONG\r\n for each received command
-}
-   });
- }
+
   
    std::cout << "Waiting for a client to connect...\n";
+	std::jthread r1 (recv_loop());
+	std::jthread r2 (recv_loop());
   
    //int fd = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
    //std::cout << "Client connected\n";
