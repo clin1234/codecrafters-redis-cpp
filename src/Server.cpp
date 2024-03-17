@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <thread>
 
 int main(int argc, char **argv) {
    // You can use print statements as follows for debugging, they'll be visible when running tests.
@@ -44,8 +45,17 @@ int main(int argc, char **argv) {
      return 1;
    }
   
+ while (true) {
    struct sockaddr_in client_addr;
    int client_addr_len = sizeof(client_addr);
+   
+   int fd = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
+   std::cout << "Client connected\n";
+   
+   std::jthread client_thread([&fd]() {
+     send(fd, "+PONG\r\n", 7, 0);
+   });
+ }
   
    std::cout << "Waiting for a client to connect...\n";
   
