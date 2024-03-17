@@ -56,6 +56,7 @@ int main(int argc, char **argv) {
    
    while ((bytes_received = recv(fd, buffer, sizeof(buffer), 0)) > 0) { // Receive data in a loop
        send(fd, "+PONG\r\n", 7, 0); // Respond with +PONG\r\n for each received command
+}
   
    close(server_fd);
    close(fd);
