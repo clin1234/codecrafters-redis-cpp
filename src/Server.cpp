@@ -9,6 +9,25 @@
 #include <thread>
 #include <unistd.h>
 
+void recv_loop(int server_fd) {
+  std::cout << "Waiting for a client to connect...\n";
+  int client_fd = accept(server_fd, (struct sockaddr *)&client_addr,
+                  (socklen_t *)&client_addr_len);
+
+  struct sockaddr_in client_addr;
+  int client_addr_len = sizeof(client_addr);
+
+  std::cout << "Client connected\n";
+  char buffer[1024];      // Buffer to store received data
+  ssize_t bytes_received; // Variable to store the number of bytes received
+
+  while ((bytes_received = recv(client_fd, buffer, sizeof(buffer), 0)) >
+         0) { // Receive data in a loop
+    send(fd, "+PONG\r\n", 7,
+         0); // Respond with +PONG\r\n for each received command
+  }
+}
+
 int main(int argc, char **argv) {
   // You can use print statements as follows for debugging, they'll be visible
   // when running tests. std::cout << "Logs from your program will appear
@@ -48,22 +67,10 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  char buffer[1024];
-  ssize_t bytes_received;
+  std::jthread r1(recv_loop, server_fd);
+  std::jthread r2(recv_loop, server_fd);
 
-  while (true) {
-    struct sockaddr_in client_addr;
-    int client_addr_len = sizeof(client_addr);
-
-    int fd = accept(server_fd, (struct sockaddr *)&client_addr,
-                    (socklen_t *)&client_addr_len);
-    std::cout << "Client connected\n";
-
-    while ((bytes_received = recv(fd, buffer, sizeof(buffer), 0)) > 0) {
-      std::jthread client_thread([&fd]() { send(fd, "+PONG\r\n", 7, 0); });
-    }
-
-    close(server_fd);
-    return 0;
+  close(client_fd);
+  close(server_fd);
   }
 }
