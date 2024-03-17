@@ -9,6 +9,8 @@ find_package(Threads)
 
 if (CMAKE_USE_PTHREADS_INIT)
 	set(THREADS_PREFER_PTHREAD_FLAG ON)
+	target_compile_options(server PUBLIC "-pthread")
+	target_link_libraries(server pthread)
 endif()
 
 add_executable(server ${SOURCE_FILES})
