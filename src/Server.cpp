@@ -4,6 +4,7 @@
 #include <iostream>
 #include <netdb.h>
 #include <string>
+#include <string_view>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <thread>
@@ -25,9 +26,9 @@ void recv_loop(int client_fd) {
 
 
 std::mutex threads_mutex;
-std::vector <std::thread> thread_vector;
+std::vector <std::jthread> thread_vector;
 
-void add_thread(std::thread&& thread) {
+void add_thread(std::jthread&& thread) {
   std::lock_guard<std::mutex> guard(threads_mutex);
   thread_vector.push_back(std::move(thread));
 }
@@ -35,7 +36,7 @@ void add_thread(std::thread&& thread) {
 
 void handle_connection(int client_fd) {
   char recv_buffer[1024];
-  std::string pong = "+PONG" + "\r\n";
+  std::string_view pong = "+PONG\r\n";
   while (recv(client_fd, recv_buffer, sizeof(recv_buffer), 0)) {
     send(client_fd, pong.c_str(), pong.length(), 0);
   }
@@ -88,12 +89,12 @@ int main(int argc, char **argv) {
   int client_fd = accept(server_fd, (struct sockaddr *)&client_addr,
                   (socklen_t *)&client_addr_len);
   if (client_fd > 0) {
-std::thread client_connection(handle_connection, client_fd);
+std::jthread client_connection(handle_connection, client_fd);
       add_thread(std::move(client_connection));
 }
 
-  std::jthread r1(recv_loop, client_fd);
-  std::jthread r2(recv_loop, client_fd);
+ // std::jthread r1(recv_loop, client_fd);
+  //std::jthread r2(recv_loop, client_fd);
 
   // int fd = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *)
   // &client_addr_len); std::cout << "Client connected\n";
