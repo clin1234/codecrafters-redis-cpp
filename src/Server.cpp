@@ -52,8 +52,9 @@ int main(int argc, char **argv) {
      int fd = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
      std::cout << "Client connected\n";
     
-     std::jthread client_thread([&fd]() {
-       send(fd, "+PONG\r\n", 7, 0);
+     while ((bytes_received = recv(fd, buffer, sizeof(buffer), 0)) > 0) {
+    	 std::jthread client_thread([&fd]() {
+       	send(fd, "+PONG\r\n", 7, 0);
      });
    }
    
