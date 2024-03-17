@@ -10,7 +10,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
-void recv_loop(int server_fd) {
+void recv_loop(int client_fd) {
   struct sockaddr_in client_addr;
   int client_addr_len = sizeof(client_addr);
 
@@ -18,7 +18,7 @@ void recv_loop(int server_fd) {
   char buffer[1024];      // Buffer to store received data
   ssize_t bytes_received; // Variable to store the number of bytes received
 
-  while ((bytes_received = recv(fd, buffer, sizeof(buffer), 0)) >
+  while ((bytes_received = recv(client_fd, buffer, sizeof(buffer), 0)) >
          0) { // Receive data in a loop
     send(fd, "+PONG\r\n", 7,
          0); // Respond with +PONG\r\n for each received command
