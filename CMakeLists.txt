@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 3.13)
 
-include(CMakePrintHelpers)
-
 project(redis-starter-cpp)
 set(CMAKE_CXX_STANDARD 20) # Enable the C++20 standard
 
 set(SOURCE_FILES src/Server.cpp)
 
 find_package(Threads)
-cmake_print_variables(CMAKE_THREAD_LIBS_INIT)
+
+if (CMAKE_USE_PTHREADS_INIT)
+	set(THREADS_PREFER_PTHREAD_FLAG ON)
+endif()
 
 add_executable(server ${SOURCE_FILES})
