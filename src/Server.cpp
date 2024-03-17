@@ -9,7 +9,7 @@
 #include <netdb.h>
 #include <thread>
 
-void recv_loop() {
+void recv_loop(int server_fd) {
  while (true) {
    struct sockaddr_in client_addr;
    int client_addr_len = sizeof(client_addr);
@@ -23,6 +23,7 @@ char buffer[1024]; // Buffer to store received data
        send(fd, "+PONG\r\n", 7, 0); // Respond with +PONG\r\n for each received command
 }
  }
+	close(fd);
 }
 
 int main(int argc, char **argv) {
@@ -64,15 +65,14 @@ int main(int argc, char **argv) {
 
   
    std::cout << "Waiting for a client to connect...\n";
-	std::jthread r1 (recv_loop());
-	std::jthread r2 (recv_loop());
+	std::jthread r1 (recv_loop, server_fd);
+	std::jthread r2 (recv_loop, server_fd);
   
    //int fd = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
    //std::cout << "Client connected\n";
    
   
    close(server_fd);
-   close(fd);
 
   return 0;
 }
