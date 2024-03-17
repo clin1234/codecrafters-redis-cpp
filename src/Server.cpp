@@ -23,7 +23,7 @@ void recv_loop(int server_fd) {
 
   while ((bytes_received = recv(client_fd, buffer, sizeof(buffer), 0)) >
          0) { // Receive data in a loop
-    send(fd, "+PONG\r\n", 7,
+    send(client_fd, "+PONG\r\n", 7,
          0); // Respond with +PONG\r\n for each received command
   }
 }
@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
   std::jthread r1(recv_loop, server_fd);
   std::jthread r2(recv_loop, server_fd);
 
-  close(client_fd);
+  //close(client_fd);
   close(server_fd);
-  }
+  
 }
