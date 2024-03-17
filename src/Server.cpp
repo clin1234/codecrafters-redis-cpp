@@ -23,6 +23,25 @@ void recv_loop(int client_fd) {
   //close(fd);
 }
 
+
+std::mutex threads_mutex;
+std::vector <std::thread> thread_vector;
+
+void add_thread(std::thread&& thread) {
+  std::lock_guard<std::mutex> guard(threads_mutex);
+  thread_vector.push_back(std::move(thread));
+}
+
+
+void handle_connection(int client_fd) {
+  char recv_buffer[1024];
+  std::string pong = "+PONG" + "\r\n";
+  while (recv(client_fd, recv_buffer, sizeof(recv_buffer), 0)) {
+    send(client_fd, pong.c_str(), pong.length(), 0);
+  }
+  close(client_fd);
+}
+
 int main(int argc, char **argv) {
   // You can use print statements as follows for debugging, they'll be visible
   // when running tests. std::cout << "Logs from your program will appear
@@ -68,6 +87,10 @@ int main(int argc, char **argv) {
   std::cout << "Waiting for a client to connect...\n";
   int client_fd = accept(server_fd, (struct sockaddr *)&client_addr,
                   (socklen_t *)&client_addr_len);
+  if (client_fd > 0) {
+std::thread client_connection(handle_connection, client_fd);
+      add_thread(std::move(client_connection));
+}
 
   std::jthread r1(recv_loop, client_fd);
   std::jthread r2(recv_loop, client_fd);
