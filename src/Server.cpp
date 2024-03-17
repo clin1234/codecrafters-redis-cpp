@@ -51,22 +51,21 @@ int main(int argc, char **argv) {
    
    int fd = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
    std::cout << "Client connected\n";
+char buffer[1024]; // Buffer to store received data
+   ssize_t bytes_received; // Variable to store the number of bytes received
    
    std::jthread client_thread([&fd]() {
-     send(fd, "+PONG\r\n", 7, 0);
+     while ((bytes_received = recv(fd, buffer, sizeof(buffer), 0)) > 0) { // Receive data in a loop
+       send(fd, "+PONG\r\n", 7, 0); // Respond with +PONG\r\n for each received command
+}
    });
  }
   
    std::cout << "Waiting for a client to connect...\n";
   
-   int fd = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
-   std::cout << "Client connected\n";
-   char buffer[1024]; // Buffer to store received data
-   ssize_t bytes_received; // Variable to store the number of bytes received
+   //int fd = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
+   //std::cout << "Client connected\n";
    
-   while ((bytes_received = recv(fd, buffer, sizeof(buffer), 0)) > 0) { // Receive data in a loop
-       send(fd, "+PONG\r\n", 7, 0); // Respond with +PONG\r\n for each received command
-}
   
    close(server_fd);
    close(fd);
