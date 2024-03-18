@@ -34,8 +34,8 @@ void handleClient(int client_fd)
                 break;
             }
         }
-        close(client_fd);
     }
+    close(client_fd);
 }
 
 int main(int argc, char **argv) {
