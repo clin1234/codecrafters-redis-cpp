@@ -77,14 +77,13 @@ int main(int argc, char **argv) {
   std::cout << "Waiting for a client to connect...\n";
 
   std::vector<std::jthread> client_threads;
-
   
   while (true)
   {
       int conn_fd = accept(server_fd, (struct sockaddr*)&client_addr, (socklen_t*)&client_addr_len);
       if (conn_fd >= 0) {
           // std::cout << "Client connected: " << conn_fd << std::endl;
-          client_threads.emplace_back(std::thread(handleClient, conn_fd));
+          client_threads.emplace_back(std::jthread(handleClient, conn_fd));
           client_threads.back().detach();
       }
   }
