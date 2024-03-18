@@ -8,31 +8,34 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <thread>
+#include <vector>
 
 constexpr unsigned BUFFER_SIZE = 1024;
 
 void handleClient(int client_fd)
 {
-  char command[BUFFER_SIZE];
-  char pong[] = "+PONG\r\n";
-  std::cout << "Client is: " << client_fd << '\n';
-  while(recv(client_fd, command, sizeof(command), 0) > 0)
-  {
-    send(client_fd, pong, strlen(pong), 0);
-  }
-  std::cout << "Client " << client_fd << " connection closed.\n";
-  close(client_fd);
-}
-
-void connectClient(int server_fd)
-{
-  struct sockaddr_in client_addr;
-  int client_addr_len = sizeof(client_addr);
-  
-  std::cout << "Waiting for a client to connect...\n";
-    int conn_fd = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
-    std::cout << "Client connected: " << conn_fd << std::endl;
-    std::jthread(handleClient, conn_fd);
+    while (true) {
+        char command[BUFFER_SIZE];
+        // std::cout << "Client is: " << client_fd << '\n';
+        ssize_t received = recv(client_fd, command, sizeof(command), 0);
+        if (received == -1) {
+            std::cerr << "[" << client_fd << "]" << "recv err: " << strerror(errno) << '\n';
+            break;
+        }
+        else if (received == 0) {
+            std::cout << "Client " << client_fd << " connection closed.\n";
+            break;
+        }
+        else {
+            const char pong[] = "+PONG\r\n";
+            ssize_t bytes_sent = send(client_fd, pong, strlen(pong), 0);
+            if (bytes_sent < 0) {
+                std::cerr << "[" << client_fd << "]" << " send err: " << strerror(errno) << '\n';
+                break;
+            }
+        }
+        close(client_fd);
+    }
 }
 
 int main(int argc, char **argv) {
@@ -67,10 +70,23 @@ int main(int argc, char **argv) {
     std::cerr << "listen failed\n";
     return 1;
   }
+
+  struct sockaddr_in client_addr;
+  int client_addr_len = sizeof(client_addr);
+
+  std::cout << "Waiting for a client to connect...\n";
+
+  std::vector<std::jthread> client_threads;
+
   
   while (true)
   {
-    connectClient(server_fd);
+      int conn_fd = accept(server_fd, (struct sockaddr*)&client_addr, (socklen_t*)&client_addr_len);
+      if (conn_fd >= 0) {
+          // std::cout << "Client connected: " << conn_fd << std::endl;
+          client_threads.emplace_back(std::thread(handleClient, conn_fd);
+          client_threads.back().detach();
+      }
   }
   
   close(server_fd);
