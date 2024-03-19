@@ -38,7 +38,7 @@ enum commands : unsigned char {
 };
 
 void parse_cmd(std::string_view cmd) {
-    const std::unordered_map<std::string, commands, string_hash, std::equal_to<>> to_enum{
+    const std::unordered_map<std::string_view, commands, string_hash, std::equal_to<>> to_enum{
         {"ping"sv, ping},
         {"echo"sv, echo}
     };
