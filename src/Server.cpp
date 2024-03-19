@@ -18,6 +18,7 @@
 #include <type_traits>
 #include <charconv>
 #include <variant>
+#include <sstream>
 
 constexpr unsigned BUFFER_SIZE = 1024;
 
@@ -37,18 +38,51 @@ enum commands : unsigned char {
     ping, echo
 };
 
-void parse_cmd(std::string_view cmd) {
-    const std::unordered_map<std::string_view, commands, string_hash, std::equal_to<>> to_enum{
-        {"ping"sv, ping},
-        {"echo"sv, echo}
+using input_result = std::variant<std::string, std::vector<string>>;
+using 
+
+using respond_func = std::function<std::string(std::string_view)>;
+
+std::string pong(void)
+{
+    return std::string("+pong\r\n");
+}
+
+std::string echof(std::string_view what) {
+    std::ostringstream oss;
+    oss << "$" << what.size() << "\r\n" << what.data() << "\r\n";
+    return oss.str();
+}
+
+std::string parse_cmd(std::string_view cmd) {
+    const std::unordered_map<std::string_view, commands, string_hash, std::equal_to<>> output_map{
+        {"ping"sv, pong},
+        {"echo"sv, echof}
     };
 
-    if (auto e = to_enum.find(cmd); e != to_enum.end()) {
-        auto func = response_map[e->second];
-        auto return_type = func(cmd);
-        if constexpr (std::is_same_v<return_type, std::string>);
-        else if constexpr (std::is_same_v<return_type, std::vector<std::string>>);
+    input_result parsed_input;
+
+    switch (cmd[0])
+    {
+    case '+':
+        parsed_input = decode_simple_string(cmd);
+        break;
+    case '*':
+        parsed_input = decode_array_string(cmd);
+        break;
+    case '$':
+        parsed_input = decode_bulk_string(cmd);
+        break;
     }
+
+    std::string to_client
+
+    if constexpr (std::is_same_v<input_result, std::string>)
+        to_client = output_map[input_result]();
+    else if constexpr (std::is_same_v<input_result, std::vector<std::string>>)
+        to_client = output_map[input_result[0]](input_result.back());
+
+    return to_client;
 }
 
 // XXX: assumes inputs are valid and sanitized prior
@@ -91,12 +125,6 @@ std::string decode_bulk_string(std::string_view cmd) {
     return std::string(cmd, pos_1st_n+1, size);
 }
 
-using decoding_func = std::function<std::variant<std::string,std::vector<std::string>>(std::string_view)>;
-
-const std::unordered_map<commands, decoding_func> response_map{
-        {ping, decode_simple_string},
-        {echo, decode_array_string}
-};
 
 void handleClient(int client_fd)
 {
@@ -114,9 +142,8 @@ void handleClient(int client_fd)
         }   
         else {
             for (unsigned i = 0; i < BUFFER_SIZE; i++) command[i] = std::tolower(command[i]);
-            parse_cmd(command);
-            const char pong[] = "+PONG\r\n";
-            ssize_t bytes_sent = send(client_fd, pong, strlen(pong), 0);
+            std::string_view for_client = parse_cmd(command);
+            ssize_t bytes_sent = send(client_fd, for_client.data(), for_client.size(), 0);
             if (bytes_sent < 0) {
                 std::cerr << "[" << client_fd << "]" << " send err: " << strerror(errno) << '\n';
                 break;
