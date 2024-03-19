@@ -16,6 +16,8 @@
 #include <functional>
 #include <any>
 #include <type_traits>
+#include <charconv>
+#include <variant>
 
 constexpr unsigned BUFFER_SIZE = 1024;
 
@@ -44,8 +46,8 @@ void parse_cmd(std::string_view cmd) {
     if (auto e = to_enum.find(cmd); e != to_enum.end()) {
         auto func = response_map[e->second];
         auto return_type = func(cmd);
-        if constexpr (std::is_same_v<return_type, std::string>) 
-        else if constexpr (std::is_same_v<return_type, std::vector<std::string>>)
+        if constexpr (std::is_same_v<return_type, std::string>);
+        else if constexpr (std::is_same_v<return_type, std::vector<std::string>>);
     }
 }
 
@@ -62,11 +64,11 @@ std::vector<std::string> decode_array_string(std::string_view cmd) {
     std::size_t pos_1st_r = cmd.find_first_of('\r');
     std::size_t pos_1st_n = cmd.find_first_of('\n');
     unsigned n_elements{};
-    std::from_chars(cmd.data(), cmd.data() + pos_1st_rn - 1, n_elements);
+    std::from_chars(cmd.data(), cmd.data() + pos_1st_r - 1, n_elements);
 
     cmd.remove_prefix(pos_1st_n); // Shift view to begin at 1st character after 1st '\n'
 
-    std::vector<std::string>> result(n_elements);
+    std::vector<std::string> result(n_elements);
 
     std::size_t tmp_r;
     for (auto i = 0; i < n_elements; i++) {
@@ -85,7 +87,7 @@ std::string decode_bulk_string(std::string_view cmd) {
     std::size_t pos_1st_n = cmd.find_first_of('\n');
     // static_assert(cmd[pos_1st_rn] != '\r' || cmd[pos_1st_rn] != '\n');
     unsigned size{};
-    std::from_chars(cmd.data(), cmd.data()+pos_1st_rn-1, size);
+    std::from_chars(cmd.data(), cmd.data()+pos_1st_r-1, size);
     return std::string(cmd, pos_1st_n+1, size);
 }
 
@@ -111,7 +113,7 @@ void handleClient(int client_fd)
             break;
         }   
         else {
-            for (unsigned i = 0; i < BUFFER_SIZE; i++) char[i] = std::tolower(char[i]);
+            for (unsigned i = 0; i < BUFFER_SIZE; i++) command[i] = std::tolower(command[i]);
             parse_cmd(command);
             const char pong[] = "+PONG\r\n";
             ssize_t bytes_sent = send(client_fd, pong, strlen(pong), 0);
