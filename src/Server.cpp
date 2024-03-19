@@ -34,56 +34,8 @@ struct string_hash
     std::size_t operator()(std::string const& str) const { return hash_type{}(str); }
 };
 
-enum commands : unsigned char {
-    ping, echo
-};
-
-using input_result = std::variant<std::string, std::vector<string>>;
-using 
-
-using respond_func = std::function<std::string(std::string_view)>;
-
-std::string pong(void)
-{
-    return std::string("+pong\r\n");
-}
-
-std::string echof(std::string_view what) {
-    std::ostringstream oss;
-    oss << "$" << what.size() << "\r\n" << what.data() << "\r\n";
-    return oss.str();
-}
-
-std::string parse_cmd(std::string_view cmd) {
-    const std::unordered_map<std::string_view, commands, string_hash, std::equal_to<>> output_map{
-        {"ping"sv, pong},
-        {"echo"sv, echof}
-    };
-
-    input_result parsed_input;
-
-    switch (cmd[0])
-    {
-    case '+':
-        parsed_input = decode_simple_string(cmd);
-        break;
-    case '*':
-        parsed_input = decode_array_string(cmd);
-        break;
-    case '$':
-        parsed_input = decode_bulk_string(cmd);
-        break;
-    }
-
-    std::string to_client
-
-    if constexpr (std::is_same_v<input_result, std::string>)
-        to_client = output_map[input_result]();
-    else if constexpr (std::is_same_v<input_result, std::vector<std::string>>)
-        to_client = output_map[input_result[0]](input_result.back());
-
-    return to_client;
-}
+using input_result = std::variant<std::string, std::vector<std::string>>;
+using server_func = std::string(*)(std::string_view)
 
 // XXX: assumes inputs are valid and sanitized prior
 
@@ -121,10 +73,51 @@ std::string decode_bulk_string(std::string_view cmd) {
     std::size_t pos_1st_n = cmd.find_first_of('\n');
     // static_assert(cmd[pos_1st_rn] != '\r' || cmd[pos_1st_rn] != '\n');
     unsigned size{};
-    std::from_chars(cmd.data(), cmd.data()+pos_1st_r-1, size);
-    return std::string(cmd, pos_1st_n+1, size);
+    std::from_chars(cmd.data(), cmd.data() + pos_1st_r - 1, size);
+    return std::string(cmd, pos_1st_n + 1, size);
 }
 
+std::string pong(std::string_view ignore)
+{
+    return std::string("+pong\r\n");
+}
+
+std::string echof(std::string_view what) {
+    std::ostringstream oss;
+    oss << "$" << what.size() << "\r\n" << what.data() << "\r\n";
+    return oss.str();
+}
+
+std::string parse_cmd(std::string_view cmd) {
+    const std::unordered_map<std::string_view, server_func, string_hash, std::equal_to<>> output_map{
+        {"ping"sv, pong},
+        {"echo"sv, echof}
+    };
+
+    input_result parsed_input;
+
+    switch (cmd[0])
+    {
+    case '+':
+        parsed_input = decode_simple_string(cmd);
+        break;
+    case '*':
+        parsed_input = decode_array_string(cmd);
+        break;
+    case '$':
+        parsed_input = decode_bulk_string(cmd);
+        break;
+    }
+
+    std::string to_client;
+
+    if constexpr (std::is_same_v<input_result, std::string>)
+        to_client = output_map[input_result]();
+    else if constexpr (std::is_same_v<input_result, std::vector<std::string>>)
+        to_client = output_map[input_result[0]](input_result.back());
+
+    return to_client;
+}
 
 void handleClient(int client_fd)
 {
