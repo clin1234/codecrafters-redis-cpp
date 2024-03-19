@@ -13,7 +13,6 @@
 #include <string_view>
 #include <unordered_map>
 #include <cctype>
-#include <format>
 #include <functional>
 #include <any>
 #include <type_traits>
