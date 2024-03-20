@@ -35,7 +35,7 @@ struct string_hash
 };
 
 using input_result = std::variant<std::string, std::vector<std::string>>;
-using server_func = std::string(*)(std::string_view)
+using server_func = std::string(*)(std::string_view);
 
 // XXX: assumes inputs are valid and sanitized prior
 
